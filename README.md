@@ -32,6 +32,7 @@ https://raw.githubusercontent.com/tumashu/posframe/master/posframe.el
 
 Put sdcv.el and posframe.el to your load-path.
 The load-path is usually ~/elisp/.
+
 It's set in your ~/.emacs like this:
 (add-to-list 'load-path (expand-file-name "~/elisp"))
 
@@ -39,6 +40,7 @@ And the following to your ~/.emacs startup file.
 
 ```Elisp
 (require 'sdcv)
+```
 
 ## Configuration
 
