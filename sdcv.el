@@ -138,7 +138,7 @@
 ;;; Change log:
 ;;
 ;; 2018/09/10
-;;      * Add option `sdcv-say-word', just support OSX now, please send me PR if you want to support Linux. ;)
+;;      * Add option `sdcv-say-word-p', just support OSX now, please send me PR if you want to support Linux. ;)
 ;;      * Make `sdcv-say-word' can work with `sdcv-search-pointer'.
 ;;      * Make `sdcv-say-word' support all platform.
 ;;      * Don't need `osx-lib' anymore.
@@ -252,7 +252,7 @@ then you don't need copy dict data to /usr/share directory everytime when you fi
   :type 'integer
   :group 'sdcv)
 
-(defcustom sdcv-say-word nil
+(defcustom sdcv-say-word-p nil
   "Say word after search word if this option is non-nil.
 Default is nil.
 
@@ -501,7 +501,7 @@ Argument DICTIONARY-LIST the word that need transform."
   ;; Set LANG environment variable, make sure `shell-command-to-string' can handle CJK character correctly.
   (setenv "LANG" "en_US.UTF-8")
   ;; Say word.
-  (sdcv-say-word word)
+  (if sdcv-say-word-p (sdcv-say-word word))
   ;; Return translate result.
   (sdcv-filter
    (shell-command-to-string

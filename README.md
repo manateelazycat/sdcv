@@ -41,7 +41,7 @@ And add the following to your .emacs startup file.
 ## Configuration
 
 ```Elisp
-(setq sdcv-say-word t)               ;say word after translation
+(setq sdcv-say-word-p t)               ;say word after translation
 
 (setq sdcv-dictionary-data-dir "startdict_dictionary_directory") ;setup directory of stardict dictionary
 
