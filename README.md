@@ -72,6 +72,10 @@ And add the following to your .emacs startup file.
         ))
 ```
 
+After completing the above configuration, please execute the command ```sdcv-check```
+to confirm that the dictionary settings is correct,
+otherwise sdcv will not work because there is no dictionary file in sdcv-dictionary-data-dir.
+
 ## Usage
 
 Below are commands you can use:
