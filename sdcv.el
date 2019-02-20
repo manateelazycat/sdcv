@@ -6,8 +6,8 @@
 ;; Maintainer: Andy Stewart <lazycat.manatee@gmail.com>
 ;; Copyright (C) 2009, Andy Stewart, all rights reserved.
 ;; Created: 2009-02-05 22:04:02
-;; Version: 2.8
-;; Last-Updated: 2018-12-09 18:55:23
+;; Version: 2.9
+;; Last-Updated: 2019-02-20 09:14:01
 ;;           By: Andy Stewart
 ;; URL: http://www.emacswiki.org/emacs/download/sdcv.el
 ;; Keywords: startdict, sdcv
@@ -136,6 +136,9 @@
 ;;
 
 ;;; Change log:
+;;
+;; 2019/02/20
+;;      * Try pick word from camelcase string and translate again if no translate result for current string.
 ;;
 ;; 2018/12/09
 ;;      * Add command `sdcv-check' to help check invalid dictionaries.
@@ -535,15 +538,50 @@ The result will be displayed in buffer named with
 (defun sdcv-search-witch-dictionary (word dictionary-list)
   "Search some WORD with dictionary list.
 Argument DICTIONARY-LIST the word that need transform."
-  ;; Get translate object.
-  (or word (setq word (sdcv-region-or-word)))
-  ;; Record current translate object.
-  (setq sdcv-current-translate-object word)
-  ;; Set LANG environment variable, make sure `shell-command-to-string' can handle CJK character correctly.
-  (setenv "LANG" "en_US.UTF-8")
-  ;; Say word.
-  (if sdcv-say-word-p (sdcv-say-word word))
-  ;; Return translate result.
+  (let (translate-result)
+    ;; Get translate object.
+    (or word (setq word (sdcv-region-or-word)))
+    ;; Record current translate object.
+    (setq sdcv-current-translate-object word)
+    ;; Set LANG environment variable, make sure `shell-command-to-string' can handle CJK character correctly.
+    (setenv "LANG" "en_US.UTF-8")
+    ;; Get translate result.
+    (setq translate-result (sdcv-translate-result word dictionary-list))
+
+    (if (string-equal translate-result "")
+        ;; Try pick word from camelcase string and translate again if no translate result for current string.
+        (progn
+          (setq word (sdcv-pick-word word))
+          (if sdcv-say-word-p (sdcv-say-word word))
+          (sdcv-translate-result word dictionary-list))
+      ;; Otherwise return translate result of current word.
+      (if sdcv-say-word-p (sdcv-say-word word))
+      translate-result)))
+
+(defun sdcv-pick-word (str)
+  (let ((case-fold-search nil)
+        (search-index 0)
+        words
+        char-offset)
+    (setq char-offset
+          (- (point)
+             (save-excursion
+               (backward-word)
+               (point)
+               )))
+    (setq str (replace-regexp-in-string "\\([a-z0-9]\\)\\([A-Z]\\)" "\\1_\\2" str))
+    (setq str (replace-regexp-in-string "\\([A-Z]+\\)\\([A-Z][a-z]\\)" "\\1_\\2" str))
+    (setq str (replace-regexp-in-string "-" "_" str))
+    (setq str (replace-regexp-in-string "_+" "_" str))
+    (setq words (s-split "_" (downcase str)))
+    (dolist (word words)
+      (if (and (>= char-offset search-index)
+               (<= char-offset (+ search-index (length word))))
+          (return word)
+        (setq search-index (+ search-index (length word))))
+      )))
+
+(defun sdcv-translate-result (word dictionary-list)
   (sdcv-filter
    (shell-command-to-string
     (format "%s -n %s %s --data-dir=%s"
