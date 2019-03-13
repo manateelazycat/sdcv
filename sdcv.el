@@ -580,7 +580,7 @@ string of results."
     (format "LANG=en_US.UTF-8 %s -n %s %s --data-dir=%s"
             sdcv-program
             (mapconcat (lambda (dict)
-                         (concat "-u " dict))
+                         (concat "-u '" dict "'"))
                        dictionary-list " ")
             word
             sdcv-dictionary-data-dir))))
