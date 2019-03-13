@@ -396,7 +396,7 @@ And show information use tooltip."
       (progn
         (call-interactively 'previous-line)
         (recenter 0))
-    (message "Have reach last dictionary.")))
+    (message "Reached last dictionary.")))
 
 (defun sdcv-previous-dictionary ()
   "Jump to previous dictionary."
@@ -406,7 +406,7 @@ And show information use tooltip."
       (progn
         (forward-char 1)
         (recenter 0))                   ;adjust position
-    (message "Have reach first dictionary.")))
+    (message "Reached first dictionary.")))
 
 (defun sdcv-scroll-up-one-line ()
   "Scroll up one line."
@@ -453,7 +453,7 @@ and eliminates the problem that cannot be translated."
           (unless (member dict dict-names)
             (setq have-invalid-dict t)
             (message
-             "sdcv-dictionary-simple-list: dictionary '%s' is not exist, remove it from sdcv-dictionary-simple-list or download the corresponding dictionary file to %s"
+             "sdcv-dictionary-simple-list: dictionary '%s' does not exist, remove it from sdcv-dictionary-simple-list or download the corresponding dictionary file to %s"
              dict
              sdcv-dictionary-data-dir)))
       (setq have-invalid-dict t)
@@ -463,7 +463,7 @@ and eliminates the problem that cannot be translated."
           (unless (member dict dict-names)
             (setq have-invalid-dict t)
             (message
-             "sdcv-dictionary-complete-list: dictionary '%s' is not exist, remove it from sdcv-dictionary-complete-list or download the corresponding dictionary file to %s"
+             "sdcv-dictionary-complete-list: dictionary '%s' does not exist, remove it from sdcv-dictionary-complete-list or download the corresponding dictionary file to %s"
              dict
              sdcv-dictionary-data-dir)))
       (setq have-invalid-dict t)
@@ -477,7 +477,7 @@ and eliminates the problem that cannot be translated."
   "Search WORD through the `command-line' tool sdcv.
 The result will be displayed in buffer named with
 `sdcv-buffer-name' with `sdcv-mode'."
-  (message "Search...")
+  (message "Searching...")
   (with-current-buffer (get-buffer-create sdcv-buffer-name)
     (setq buffer-read-only nil)
     (erase-buffer)
@@ -630,7 +630,7 @@ the beginning of the buffer."
     (goto-char (point-min))
     (sdcv-next-dictionary)
     (show-all)
-    (message "Have search finished with `%s'." sdcv-current-translate-object)))
+    (message "Finished searching `%s'." sdcv-current-translate-object)))
 
 (defun sdcv-prompt-input ()
   "Prompt input object for translate."
