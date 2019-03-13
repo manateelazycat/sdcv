@@ -474,9 +474,9 @@ and eliminates the problem that cannot be translated."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Utilities Functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun sdcv-search-detail (&optional word)
-  "Search WORD through the `command-line' tool sdcv.
-The result will be displayed in buffer named with
-`sdcv-buffer-name' with `sdcv-mode'."
+  "Search WORD in `sdcv-dictionary-complete-list'. The result
+will be displayed in buffer named with `sdcv-buffer-name' with
+`sdcv-mode'."
   (message "Searching...")
   (with-current-buffer (get-buffer-create sdcv-buffer-name)
     (setq buffer-read-only nil)
@@ -489,7 +489,7 @@ The result will be displayed in buffer named with
 
 (defun sdcv-search-simple (&optional word)
   "Search WORD simple translate result."
-  (let ((result (sdcv-search-witch-dictionary word sdcv-dictionary-simple-list)))
+  (let ((result (sdcv-search-with-dictionary word sdcv-dictionary-simple-list)))
     ;; Show tooltip at point if word fetch from user cursor.
     (posframe-show
      sdcv-tooltip-name
@@ -529,7 +529,7 @@ The result will be displayed in buffer named with
         (posframe-delete sdcv-tooltip-name)
         (kill-buffer sdcv-tooltip-name)))))
 
-(defun sdcv-search-witch-dictionary (word dictionary-list)
+(defun sdcv-search-with-dictionary (word dictionary-list)
   "Search some WORD with dictionary list.
 Argument DICTIONARY-LIST the word that need transform."
   (let (translate-result)
@@ -576,6 +576,8 @@ Argument DICTIONARY-LIST the word that need transform."
       )))
 
 (defun sdcv-translate-result (word dictionary-list)
+  "Call sdcv to search word in dictionary list, return filtered
+string of results."
   (sdcv-filter
    (shell-command-to-string
     (format "%s -n %s %s --data-dir=%s"
