@@ -481,17 +481,11 @@ The result will be displayed in buffer named with
   (with-current-buffer (get-buffer-create sdcv-buffer-name)
     (setq buffer-read-only nil)
     (erase-buffer)
-    (let* ((process
-            (start-process
-             "sdcv" sdcv-buffer-name sdcv-program
-             (sdcv-search-witch-dictionary word sdcv-dictionary-complete-list))))
-      (set-process-sentinel
-       process
-       (lambda (process signal)
-         (when (memq (process-status process) '(exit signal))
-           (unless (eq (current-buffer) (sdcv-get-buffer))
-             (sdcv-goto-sdcv))
-           (sdcv-mode-reinit)))))))
+    (setq sdcv-current-translate-object word)
+    (insert (sdcv-search-with-dictionary word
+                                         sdcv-dictionary-complete-list))
+    (sdcv-goto-sdcv)
+    (sdcv-mode-reinit)))
 
 (defun sdcv-search-simple (&optional word)
   "Search WORD simple translate result."
