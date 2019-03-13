@@ -438,13 +438,11 @@ And show information use tooltip."
   "This function mainly detects the StarDict dictionary that does not exist,
 and eliminates the problem that cannot be translated."
   (interactive)
-  ;; Set LANG environment variable, make sure `shell-command-to-string' can handle CJK character correctly.
-  (setenv "LANG" "en_US.UTF-8")
   (let* ((dict-name-infos
           (cdr (split-string
                 (string-trim
                  (shell-command-to-string
-                  (format "%s --list-dicts --data-dir=%s" sdcv-program sdcv-dictionary-data-dir)))
+                  (format "LANG=en_US.UTF-8 %s --list-dicts --data-dir=%s" sdcv-program sdcv-dictionary-data-dir)))
                 "\n")))
          (dict-names (mapcar (lambda (dict) (car (split-string dict " "))) dict-name-infos))
          (have-invalid-dict nil))
@@ -537,8 +535,6 @@ Argument DICTIONARY-LIST the word that need transform."
     (or word (setq word (sdcv-region-or-word)))
     ;; Record current translate object.
     (setq sdcv-current-translate-object word)
-    ;; Set LANG environment variable, make sure `shell-command-to-string' can handle CJK character correctly.
-    (setenv "LANG" "en_US.UTF-8")
     ;; Get translate result.
     (setq translate-result (sdcv-translate-result word dictionary-list))
 
@@ -580,7 +576,8 @@ Argument DICTIONARY-LIST the word that need transform."
 string of results."
   (sdcv-filter
    (shell-command-to-string
-    (format "%s -n %s %s --data-dir=%s"
+    ;; Set LANG environment variable, make sure `shell-command-to-string' can handle CJK character correctly.
+    (format "LANG=en_US.UTF-8 %s -n %s %s --data-dir=%s"
             sdcv-program
             (mapconcat (lambda (dict)
                          (concat "-u " dict))
