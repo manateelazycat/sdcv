@@ -396,7 +396,7 @@ And show information use tooltip."
       (progn
         (call-interactively 'previous-line)
         (recenter 0))
-    (message "Have reach last dictionary.")))
+    (message "Reached last dictionary.")))
 
 (defun sdcv-previous-dictionary ()
   "Jump to previous dictionary."
@@ -406,7 +406,7 @@ And show information use tooltip."
       (progn
         (forward-char 1)
         (recenter 0))                   ;adjust position
-    (message "Have reach first dictionary.")))
+    (message "Reached first dictionary.")))
 
 (defun sdcv-scroll-up-one-line ()
   "Scroll up one line."
@@ -438,13 +438,11 @@ And show information use tooltip."
   "This function mainly detects the StarDict dictionary that does not exist,
 and eliminates the problem that cannot be translated."
   (interactive)
-  ;; Set LANG environment variable, make sure `shell-command-to-string' can handle CJK character correctly.
-  (setenv "LANG" "en_US.UTF-8")
   (let* ((dict-name-infos
           (cdr (split-string
                 (string-trim
                  (shell-command-to-string
-                  (format "%s --list-dicts --data-dir=%s" sdcv-program sdcv-dictionary-data-dir)))
+                  (format "LANG=en_US.UTF-8 %s --list-dicts --data-dir=%s" sdcv-program sdcv-dictionary-data-dir)))
                 "\n")))
          (dict-names (mapcar (lambda (dict) (car (split-string dict " "))) dict-name-infos))
          (have-invalid-dict nil))
@@ -453,7 +451,7 @@ and eliminates the problem that cannot be translated."
           (unless (member dict dict-names)
             (setq have-invalid-dict t)
             (message
-             "sdcv-dictionary-simple-list: dictionary '%s' is not exist, remove it from sdcv-dictionary-simple-list or download the corresponding dictionary file to %s"
+             "sdcv-dictionary-simple-list: dictionary '%s' does not exist, remove it from sdcv-dictionary-simple-list or download the corresponding dictionary file to %s"
              dict
              sdcv-dictionary-data-dir)))
       (setq have-invalid-dict t)
@@ -463,7 +461,7 @@ and eliminates the problem that cannot be translated."
           (unless (member dict dict-names)
             (setq have-invalid-dict t)
             (message
-             "sdcv-dictionary-complete-list: dictionary '%s' is not exist, remove it from sdcv-dictionary-complete-list or download the corresponding dictionary file to %s"
+             "sdcv-dictionary-complete-list: dictionary '%s' does not exist, remove it from sdcv-dictionary-complete-list or download the corresponding dictionary file to %s"
              dict
              sdcv-dictionary-data-dir)))
       (setq have-invalid-dict t)
@@ -474,28 +472,22 @@ and eliminates the problem that cannot be translated."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Utilities Functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun sdcv-search-detail (&optional word)
-  "Search WORD through the `command-line' tool sdcv.
-The result will be displayed in buffer named with
-`sdcv-buffer-name' with `sdcv-mode'."
-  (message "Search...")
+  "Search WORD in `sdcv-dictionary-complete-list'. The result
+will be displayed in buffer named with `sdcv-buffer-name' with
+`sdcv-mode'."
+  (message "Searching...")
   (with-current-buffer (get-buffer-create sdcv-buffer-name)
     (setq buffer-read-only nil)
     (erase-buffer)
-    (let* ((process
-            (start-process
-             "sdcv" sdcv-buffer-name sdcv-program
-             (sdcv-search-witch-dictionary word sdcv-dictionary-complete-list))))
-      (set-process-sentinel
-       process
-       (lambda (process signal)
-         (when (memq (process-status process) '(exit signal))
-           (unless (eq (current-buffer) (sdcv-get-buffer))
-             (sdcv-goto-sdcv))
-           (sdcv-mode-reinit)))))))
+    (setq sdcv-current-translate-object word)
+    (insert (sdcv-search-with-dictionary word
+                                         sdcv-dictionary-complete-list))
+    (sdcv-goto-sdcv)
+    (sdcv-mode-reinit)))
 
 (defun sdcv-search-simple (&optional word)
   "Search WORD simple translate result."
-  (let ((result (sdcv-search-witch-dictionary word sdcv-dictionary-simple-list)))
+  (let ((result (sdcv-search-with-dictionary word sdcv-dictionary-simple-list)))
     ;; Show tooltip at point if word fetch from user cursor.
     (posframe-show
      sdcv-tooltip-name
@@ -535,7 +527,7 @@ The result will be displayed in buffer named with
         (posframe-delete sdcv-tooltip-name)
         (kill-buffer sdcv-tooltip-name)))))
 
-(defun sdcv-search-witch-dictionary (word dictionary-list)
+(defun sdcv-search-with-dictionary (word dictionary-list)
   "Search some WORD with dictionary list.
 Argument DICTIONARY-LIST the word that need transform."
   (let (translate-result)
@@ -543,8 +535,6 @@ Argument DICTIONARY-LIST the word that need transform."
     (or word (setq word (sdcv-region-or-word)))
     ;; Record current translate object.
     (setq sdcv-current-translate-object word)
-    ;; Set LANG environment variable, make sure `shell-command-to-string' can handle CJK character correctly.
-    (setenv "LANG" "en_US.UTF-8")
     ;; Get translate result.
     (setq translate-result (sdcv-translate-result word dictionary-list))
 
@@ -582,12 +572,15 @@ Argument DICTIONARY-LIST the word that need transform."
       )))
 
 (defun sdcv-translate-result (word dictionary-list)
+  "Call sdcv to search word in dictionary list, return filtered
+string of results."
   (sdcv-filter
    (shell-command-to-string
-    (format "%s -n %s %s --data-dir=%s"
+    ;; Set LANG environment variable, make sure `shell-command-to-string' can handle CJK character correctly.
+    (format "LANG=en_US.UTF-8 %s -n %s %s --data-dir=%s"
             sdcv-program
             (mapconcat (lambda (dict)
-                         (concat "-u " dict))
+                         (concat "-u '" dict "'"))
                        dictionary-list " ")
             word
             sdcv-dictionary-data-dir))))
@@ -630,7 +623,7 @@ the beginning of the buffer."
     (goto-char (point-min))
     (sdcv-next-dictionary)
     (show-all)
-    (message "Have search finished with `%s'." sdcv-current-translate-object)))
+    (message "Finished searching `%s'." sdcv-current-translate-object)))
 
 (defun sdcv-prompt-input ()
   "Prompt input object for translate."
