@@ -6,8 +6,8 @@
 ;; Maintainer: Andy Stewart <lazycat.manatee@gmail.com>
 ;; Copyright (C) 2009, Andy Stewart, all rights reserved.
 ;; Created: 2009-02-05 22:04:02
-;; Version: 2.9
-;; Last-Updated: 2019-02-20 09:14:01
+;; Version: 3.0
+;; Last-Updated: 2019-04-05 21:19:41
 ;;           By: Andy Stewart
 ;; URL: http://www.emacswiki.org/emacs/download/sdcv.el
 ;; Keywords: startdict, sdcv
@@ -136,6 +136,9 @@
 ;;
 
 ;;; Change log:
+;;
+;; 2019/04/05
+;;      * Add -x option avoid read dict from env `STARDICT_DATA_DIR'.
 ;;
 ;; 2019/02/20
 ;;      * Try pick word from camelcase string and translate again if no translate result for current string.
@@ -577,7 +580,7 @@ string of results."
   (sdcv-filter
    (shell-command-to-string
     ;; Set LANG environment variable, make sure `shell-command-to-string' can handle CJK character correctly.
-    (format "LANG=en_US.UTF-8 %s -n %s %s --data-dir=%s"
+    (format "LANG=en_US.UTF-8 %s -x -n %s %s --data-dir=%s"
             sdcv-program
             (mapconcat (lambda (dict)
                          (concat "-u \"" dict "\""))
