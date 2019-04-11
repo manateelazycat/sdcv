@@ -15,7 +15,7 @@
 ;;
 ;; Features that might be required by this library:
 ;;
-;; `posframe' `outline' `cl'
+;; `posframe' `outline' `cl' `s'
 ;;
 
 ;;; This file is NOT part of GNU Emacs
@@ -211,6 +211,7 @@
 (eval-when-compile
   (require 'cl))
 (require 'posframe)
+(require 's)
 
 ;;; Code:
 
