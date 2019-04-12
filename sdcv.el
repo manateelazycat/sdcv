@@ -6,8 +6,8 @@
 ;; Maintainer: Andy Stewart <lazycat.manatee@gmail.com>
 ;; Copyright (C) 2009, Andy Stewart, all rights reserved.
 ;; Created: 2009-02-05 22:04:02
-;; Version: 3.0
-;; Last-Updated: 2019-04-05 21:19:41
+;; Version: 3.1
+;; Last-Updated: 2019-04-12 10:20:39
 ;;           By: Andy Stewart
 ;; URL: http://www.emacswiki.org/emacs/download/sdcv.el
 ;; Keywords: startdict, sdcv
@@ -136,6 +136,9 @@
 ;;
 
 ;;; Change log:
+;;
+;; 2019/04/12
+;;      * Use `split-string' instead `s-split' to remove depend of s.el
 ;;
 ;; 2019/04/05
 ;;      * Add -x option avoid read dict from env `STARDICT_DATA_DIR'.
@@ -566,7 +569,7 @@ Argument DICTIONARY-LIST the word that need transform."
     (setq str (replace-regexp-in-string "\\([A-Z]+\\)\\([A-Z][a-z]\\)" "\\1_\\2" str))
     (setq str (replace-regexp-in-string "-" "_" str))
     (setq str (replace-regexp-in-string "_+" "_" str))
-    (setq words (s-split "_" (downcase str)))
+    (setq words (split-string (downcase str) "_"))
     (dolist (word words)
       (if (and (>= char-offset search-index)
                (<= char-offset (+ search-index (length word))))
