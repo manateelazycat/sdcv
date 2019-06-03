@@ -91,3 +91,6 @@ Tips:
 
 If current mark is active, sdcv commands will translate
 region string, otherwise translate word around point.
+
+## Dictionary
+You can download sdcv dictionary from http://download.huzheng.org/dict.org/
