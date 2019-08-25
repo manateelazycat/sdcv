@@ -450,7 +450,7 @@ and eliminates the problem that cannot be translated."
                  (shell-command-to-string
                   (format "LANG=en_US.UTF-8 %s --list-dicts --data-dir=%s" sdcv-program sdcv-dictionary-data-dir)))
                 "\n")))
-         (dict-names (mapcar (lambda (dict) (car (split-string dict " "))) dict-name-infos))
+         (dict-names (mapcar (lambda (dict) (car (split-string dict "    "))) dict-name-infos))
          (have-invalid-dict nil))
     (if sdcv-dictionary-simple-list
         (dolist (dict sdcv-dictionary-simple-list)
