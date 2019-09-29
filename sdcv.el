@@ -6,8 +6,8 @@
 ;; Maintainer: Andy Stewart <lazycat.manatee@gmail.com>
 ;; Copyright (C) 2009, Andy Stewart, all rights reserved.
 ;; Created: 2009-02-05 22:04:02
-;; Version: 3.1
-;; Last-Updated: 2019-04-12 10:20:39
+;; Version: 3.2
+;; Last-Updated: 2019-09-30 07:20:39
 ;;           By: Andy Stewart
 ;; URL: http://www.emacswiki.org/emacs/download/sdcv.el
 ;; Keywords: startdict, sdcv
@@ -136,6 +136,9 @@
 ;;
 
 ;;; Change log:
+;;
+;; 2019/09/30
+;;      * Use `zh_CN.UTF-8' instead `en_US.UTF-8' to fixed dictionary name issue.
 ;;
 ;; 2019/04/12
 ;;      * Use `split-string' instead `s-split' to remove depend of s.el
@@ -274,7 +277,7 @@ Voice will fetch from youdao.com if you use other system."
   :group 'sdcv)
 
 (defface sdcv-tooltip-face
-  '((t (:foreground "green" :background "gray12")))
+    '((t (:foreground "green" :background "gray12")))
   "Face for sdcv tooltip"
   :group 'sdcv)
 
@@ -445,11 +448,11 @@ And show information use tooltip."
 and eliminates the problem that cannot be translated."
   (interactive)
   (let* ((dict-name-infos
-          (cdr (split-string
-                (string-trim
-                 (shell-command-to-string
-                  (format "LANG=en_US.UTF-8 %s --list-dicts --data-dir=%s" sdcv-program sdcv-dictionary-data-dir)))
-                "\n")))
+           (cdr (split-string
+                 (string-trim
+                  (shell-command-to-string
+                   (format "LANG=zh_CN.UTF-8 %s --list-dicts --data-dir=%s" sdcv-program sdcv-dictionary-data-dir)))
+                 "\n")))
          (dict-names (mapcar (lambda (dict) (car (split-string dict "    "))) dict-name-infos))
          (have-invalid-dict nil))
     (if sdcv-dictionary-simple-list
@@ -583,7 +586,7 @@ string of results."
   (sdcv-filter
    (shell-command-to-string
     ;; Set LANG environment variable, make sure `shell-command-to-string' can handle CJK character correctly.
-    (format "LANG=en_US.UTF-8 %s -x -n %s %s --data-dir=%s"
+    (format "LANG=zh_CN.UTF-8 %s -x -n %s %s --data-dir=%s"
             sdcv-program
             (mapconcat (lambda (dict)
                          (concat "-u \"" dict "\""))
