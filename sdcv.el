@@ -451,7 +451,7 @@ and eliminates the problem that cannot be translated."
            (cdr (split-string
                  (string-trim
                   (shell-command-to-string
-                   (format "LANG=zh_CN.UTF-8 %s --list-dicts --data-dir=%s" sdcv-program sdcv-dictionary-data-dir)))
+                   (format "env LANG=zh_CN.UTF-8 %s --list-dicts --data-dir=%s" sdcv-program sdcv-dictionary-data-dir)))
                  "\n")))
          (dict-names (mapcar (lambda (dict) (car (split-string dict "    "))) dict-name-infos))
          (have-invalid-dict nil))
@@ -586,7 +586,7 @@ string of results."
   (sdcv-filter
    (shell-command-to-string
     ;; Set LANG environment variable, make sure `shell-command-to-string' can handle CJK character correctly.
-    (format "LANG=zh_CN.UTF-8 %s -x -n %s %s --data-dir=%s"
+    (format "env LANG=zh_CN.UTF-8 %s -x -n %s %s --data-dir=%s"
             sdcv-program
             (mapconcat (lambda (dict)
                          (concat "-u \"" dict "\""))
