@@ -6,8 +6,8 @@
 ;; Maintainer: Andy Stewart <lazycat.manatee@gmail.com>
 ;; Copyright (C) 2009, Andy Stewart, all rights reserved.
 ;; Created: 2009-02-05 22:04:02
-;; Version: 3.2
-;; Last-Updated: 2019-09-30 07:20:39
+;; Version: 3.3
+;; Last-Updated: 2020-02-13 19:32:08
 ;;           By: Andy Stewart
 ;; URL: http://www.emacswiki.org/emacs/download/sdcv.el
 ;; Keywords: startdict, sdcv
@@ -136,6 +136,9 @@
 ;;
 
 ;;; Change log:
+;;
+;; 2020/02/13
+;;      * Support EAF mode and don't jump pointer when sdcv frame popup.
 ;;
 ;; 2019/09/30
 ;;      * Use `zh_CN.UTF-8' instead `en_US.UTF-8' to fixed dictionary name issue.
@@ -277,7 +280,7 @@ Voice will fetch from youdao.com if you use other system."
   :group 'sdcv)
 
 (defface sdcv-tooltip-face
-    '((t (:foreground "green" :background "gray12")))
+  '((t (:foreground "green" :background "gray12")))
   "Face for sdcv tooltip"
   :group 'sdcv)
 
@@ -448,11 +451,11 @@ And show information use tooltip."
 and eliminates the problem that cannot be translated."
   (interactive)
   (let* ((dict-name-infos
-           (cdr (split-string
-                 (string-trim
-                  (shell-command-to-string
-                   (format "env LANG=zh_CN.UTF-8 %s --list-dicts --data-dir=%s" sdcv-program sdcv-dictionary-data-dir)))
-                 "\n")))
+          (cdr (split-string
+                (string-trim
+                 (shell-command-to-string
+                  (format "env LANG=zh_CN.UTF-8 %s --list-dicts --data-dir=%s" sdcv-program sdcv-dictionary-data-dir)))
+                "\n")))
          (dict-names (mapcar (lambda (dict) (car (split-string dict "    "))) dict-name-infos))
          (have-invalid-dict nil))
     (if sdcv-dictionary-simple-list
@@ -496,12 +499,13 @@ will be displayed in buffer named with `sdcv-buffer-name' with
 
 (defun sdcv-search-simple (&optional word)
   "Search WORD simple translate result."
-  (let ((result (sdcv-search-with-dictionary word sdcv-dictionary-simple-list)))
+  (let ((result (sdcv-search-with-dictionary word sdcv-dictionary-simple-list))
+        (posframe-mouse-banish nil))
     ;; Show tooltip at point if word fetch from user cursor.
     (posframe-show
      sdcv-tooltip-name
      :string result
-     :position (point)
+     :position (if (derived-mode-p 'eaf-mode) (mouse-absolute-pixel-position) (point))
      :timeout sdcv-tooltip-timeout
      :background-color (face-attribute 'sdcv-tooltip-face :background)
      :foreground-color (face-attribute 'sdcv-tooltip-face :foreground)
