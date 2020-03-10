@@ -546,6 +546,8 @@ Argument DICTIONARY-LIST the word that need transform."
   (let (translate-result)
     ;; Get translate object.
     (or word (setq word (sdcv-region-or-word)))
+
+    (or (region-active-p) (deactivate-mark))
     ;; Record current translate object.
     (setq sdcv-current-translate-object word)
     ;; Get translate result.
@@ -595,7 +597,7 @@ string of results."
             (mapconcat (lambda (dict)
                          (concat "-u \"" dict "\""))
                        dictionary-list " ")
-            word
+            (format "\"%s\"" word)
             sdcv-dictionary-data-dir))))
 
 (defun sdcv-filter (sdcv-string)
