@@ -511,7 +511,10 @@ will be displayed in buffer named with `sdcv-buffer-name' with
      :foreground-color (face-attribute 'sdcv-tooltip-face :foreground)
      :internal-border-width sdcv-tooltip-border-width
      )
-    (add-hook 'post-command-hook 'sdcv-hide-tooltip-after-move)
+    (unwind-protect
+	(push (read-event) unread-command-events)
+      (posframe-delete sdcv-tooltip-name))
+    ;; (add-hook 'post-command-hook 'sdcv-hide-tooltip-after-move)
     (setq sdcv-tooltip-last-point (point))
     (setq sdcv-tooltip-last-scroll-offset (window-start))
     ))
@@ -546,6 +549,7 @@ Argument DICTIONARY-LIST the word that need transform."
   (let (translate-result)
     ;; Get translate object.
     (or word (setq word (sdcv-region-or-word)))
+
     ;; Record current translate object.
     (setq sdcv-current-translate-object word)
     ;; Get translate result.
@@ -595,7 +599,7 @@ string of results."
             (mapconcat (lambda (dict)
                          (concat "-u \"" dict "\""))
                        dictionary-list " ")
-            word
+            (format "\"%s\"" word)
             sdcv-dictionary-data-dir))))
 
 (defun sdcv-filter (sdcv-string)
