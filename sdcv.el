@@ -6,8 +6,8 @@
 ;; Maintainer: Andy Stewart <lazycat.manatee@gmail.com>
 ;; Copyright (C) 2009, Andy Stewart, all rights reserved.
 ;; Created: 2009-02-05 22:04:02
-;; Version: 3.3
-;; Last-Updated: 2020-02-13 19:32:08
+;; Version: 3.4
+;; Last-Updated: 2020-06-12 19:32:08
 ;;           By: Andy Stewart
 ;; URL: http://www.emacswiki.org/emacs/download/sdcv.el
 ;; Keywords: startdict, sdcv
@@ -136,6 +136,9 @@
 ;;
 
 ;;; Change log:
+;;
+;; 2020/06/12
+;;      * Add `sdcv-env-lang' option.
 ;;
 ;; 2020/02/13
 ;;      * Support EAF mode and don't jump pointer when sdcv frame popup.
@@ -277,6 +280,13 @@ Default is nil.
 Voice will use system feature if you use OSX.
 Voice will fetch from youdao.com if you use other system."
   :type 'integer
+  :group 'sdcv)
+
+(defcustom sdcv-env-lang "zh_CN.UTF-8"
+  "Default LANG environment for sdcv program.
+
+Default is zh_CN.UTF-8, maybe you need change to other coding if your system is not zh_CN.UTF-8."
+  :type 'string
   :group 'sdcv)
 
 (defface sdcv-tooltip-face
@@ -454,7 +464,7 @@ and eliminates the problem that cannot be translated."
           (cdr (split-string
                 (string-trim
                  (shell-command-to-string
-                  (format "env LANG=zh_CN.UTF-8 %s --list-dicts --data-dir=%s" sdcv-program sdcv-dictionary-data-dir)))
+                  (format "env LANG=%s %s --list-dicts --data-dir=%s" sdcv-env-lang sdcv-program sdcv-dictionary-data-dir)))
                 "\n")))
          (dict-names (mapcar (lambda (dict) (car (split-string dict "    "))) dict-name-infos))
          (have-invalid-dict nil))
@@ -594,7 +604,8 @@ string of results."
   (sdcv-filter
    (shell-command-to-string
     ;; Set LANG environment variable, make sure `shell-command-to-string' can handle CJK character correctly.
-    (format "env LANG=zh_CN.UTF-8 %s -x -n %s %s --data-dir=%s"
+    (format "env LANG=%s %s -x -n %s %s --data-dir=%s"
+            sdcv-env-lang
             sdcv-program
             (mapconcat (lambda (dict)
                          (concat "-u \"" dict "\""))
