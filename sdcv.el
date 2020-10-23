@@ -220,11 +220,8 @@
 
 ;;; Require
 (require 'outline)
-(require 'subr-x)
 (eval-when-compile
-  (if (version< emacs-version "27.1")
-    (require 'cl)
-    (require 'cl-lib)))
+  (require 'cl))
 (require 'posframe)
 
 ;;; Code:
