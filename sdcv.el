@@ -522,7 +522,7 @@ will be displayed in buffer named with `sdcv-buffer-name' with
      :internal-border-width sdcv-tooltip-border-width
      )
     (unwind-protect
-	(push (read-event) unread-command-events)
+	(push (read-event " ") unread-command-events)
       (posframe-delete sdcv-tooltip-name))
     ;; (add-hook 'post-command-hook 'sdcv-hide-tooltip-after-move)
     (setq sdcv-tooltip-last-point (point))
