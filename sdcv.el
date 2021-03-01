@@ -520,9 +520,11 @@ will be displayed in buffer named with `sdcv-buffer-name' with
      :background-color (face-attribute 'sdcv-tooltip-face :background)
      :foreground-color (face-attribute 'sdcv-tooltip-face :foreground)
      :internal-border-width sdcv-tooltip-border-width
+     :tab-line-height 0
+     :header-line-height 0
      )
     (unwind-protect
-	(push (read-event " ") unread-command-events)
+        (push (read-event " ") unread-command-events)
       (posframe-delete sdcv-tooltip-name))
     ;; (add-hook 'post-command-hook 'sdcv-hide-tooltip-after-move)
     (setq sdcv-tooltip-last-point (point))
