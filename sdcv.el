@@ -1,4 +1,4 @@
-;;; sdcv.el --- Interface for sdcv (StartDict console version).
+;;; sdcv.el --- Interface for sdcv (StartDict console version). -*- lexical-binding: t -*-
 
 ;; Filename: sdcv.el
 ;; Description: Interface for sdcv (StartDict console version).
@@ -15,7 +15,7 @@
 ;;
 ;; Features that might be required by this library:
 ;;
-;; `posframe' `outline' `cl'
+;; `posframe' `outline' `cl-lib'
 ;;
 
 ;;; This file is NOT part of GNU Emacs
@@ -221,7 +221,7 @@
 ;;; Require
 (require 'outline)
 (eval-when-compile
-  (require 'cl))
+  (require 'cl-lib))
 (require 'posframe)
 
 ;;; Code:
@@ -264,7 +264,8 @@
 (defcustom sdcv-dictionary-data-dir nil
   "Default, sdcv search word from /usr/share/startdict/dict/.
 You can customize this value with local dir,
-then you don't need copy dict data to /usr/share directory everytime when you finish system install."
+then you don't need copy dict data to /usr/share directory
+everytime when you finish system install."
   :type 'string
   :group 'sdcv)
 
@@ -285,7 +286,17 @@ Voice will fetch from youdao.com if you use other system."
 (defcustom sdcv-env-lang "zh_CN.UTF-8"
   "Default LANG environment for sdcv program.
 
-Default is zh_CN.UTF-8, maybe you need change to other coding if your system is not zh_CN.UTF-8."
+Default is zh_CN.UTF-8, maybe you need change to
+other coding if your system is not zh_CN.UTF-8."
+  :type 'string
+  :group 'sdcv)
+
+(defcustom sdcv-command-string  "env LANG=%s %s -x -n %s %s --utf8-output --utf8-input --data-dir=%s"
+  "Default format string used by `sdcv-translate-result' to create shell
+commands to invoke sdcv.
+
+See `sdcv-translate-result' for details.
+"
   :type 'string
   :group 'sdcv)
 
@@ -311,7 +322,8 @@ Default is zh_CN.UTF-8, maybe you need change to other coding if your system is 
   "Hold last point when show tooltip, use for hide tooltip after move point.")
 
 (defvar sdcv-tooltip-last-scroll-offset 0
-  "Hold last scroll offset when show tooltip, use for hide tooltip after window scroll.")
+  "Hold last scroll offset when show tooltip,
+use for hide tooltip after window scroll.")
 
 (defvar sdcv-mode-font-lock-keywords    ;keyword for buffer display
   '(
@@ -413,7 +425,7 @@ And show information use tooltip."
 (defun sdcv-next-dictionary ()
   "Jump to next dictionary."
   (interactive)
-  (show-all)
+  (outline-show-all)
   (if (search-forward-regexp "^-->.*\n-" nil t) ;don't show error when search failed
       (progn
         (call-interactively 'previous-line)
@@ -423,7 +435,7 @@ And show information use tooltip."
 (defun sdcv-previous-dictionary ()
   "Jump to previous dictionary."
   (interactive)
-  (show-all)
+  (outline-show-all)
   (if (search-backward-regexp "^-->.*\n-" nil t) ;don't show error when search failed
       (progn
         (forward-char 1)
@@ -448,7 +460,7 @@ And show information use tooltip."
     (save-excursion
       (beginning-of-line nil)
       (when (looking-at outline-regexp)
-        (show-entry)))))
+        (outline-show-entry)))))
 
 (defun sdcv-prev-line (arg)
   "Previous ARG line."
@@ -596,7 +608,7 @@ Argument DICTIONARY-LIST the word that need transform."
     (dolist (word words)
       (if (and (>= char-offset search-index)
                (<= char-offset (+ search-index (length word))))
-          (return word)
+          (cl-return word)
         (setq search-index (+ search-index (length word))))
       )))
 
@@ -606,7 +618,7 @@ string of results."
   (sdcv-filter
    (shell-command-to-string
     ;; Set LANG environment variable, make sure `shell-command-to-string' can handle CJK character correctly.
-    (format "env LANG=%s %s -x -n %s %s --data-dir=%s"
+    (format sdcv-command-string
             sdcv-env-lang
             sdcv-program
             (mapconcat (lambda (dict)
@@ -652,7 +664,7 @@ the beginning of the buffer."
     (setq buffer-read-only t)
     (goto-char (point-min))
     (sdcv-next-dictionary)
-    (show-all)
+    (outline-show-all)
     (message "Finished searching `%s'." sdcv-current-translate-object)))
 
 (defun sdcv-prompt-input ()
