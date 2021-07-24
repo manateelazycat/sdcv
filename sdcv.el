@@ -461,12 +461,9 @@ And show information use tooltip."
 and eliminates the problem that cannot be translated."
   (interactive)
   (let* ((dict-name-infos
-          (cdr (split-string
-                (string-trim
-                 (shell-command-to-string
-                  (format "env LANG=%s %s --list-dicts --data-dir=%s" sdcv-env-lang sdcv-program sdcv-dictionary-data-dir)))
-                "\n")))
-         (dict-names (mapcar (lambda (dict) (car (split-string dict "    "))) dict-name-infos))
+          (let ((process-environment (cons (concat "LANG=" sdcv-env-lang) process-environment)))
+            (cdr (process-lines sdcv-program "--list-dicts" "--data-dir" sdcv-dictionary-data-dir))))
+         (dict-names (mapcar (lambda (dict) (car (split-string dict "\s\s\s\s"))) dict-name-infos))
          (have-invalid-dict nil))
     (if sdcv-dictionary-simple-list
         (dolist (dict sdcv-dictionary-simple-list)
@@ -603,28 +600,21 @@ Argument DICTIONARY-LIST the word that need transform."
 (defun sdcv-translate-result (word dictionary-list)
   "Call sdcv to search word in dictionary list, return filtered
 string of results."
-  (sdcv-filter
-   (shell-command-to-string
+  (with-temp-buffer
     ;; Set LANG environment variable, make sure `shell-command-to-string' can handle CJK character correctly.
-    (format "env LANG=%s %s -x -n %s %s --data-dir=%s"
-            sdcv-env-lang
-            sdcv-program
-            (mapconcat (lambda (dict)
-                         (concat "-u \"" dict "\""))
-                       dictionary-list " ")
-            (format "\"%s\"" word)
-            sdcv-dictionary-data-dir))))
-
-(defun sdcv-filter (sdcv-string)
-  "This function is for filter sdcv output string,.
-Argument SDCV-STRING the search string from sdcv."
-  (setq sdcv-string (replace-regexp-in-string sdcv-filter-string "" sdcv-string))
-  (if (equal sdcv-string "")
-      sdcv-fail-notify-string
-    (with-temp-buffer
-      (insert sdcv-string)
+    (let ((process-environment (cons (concat "LANG=" sdcv-env-lang) process-environment)))
+      (apply #'call-process sdcv-program nil t nil
+             "-x" "-n" "--data-dir" sdcv-dictionary-data-dir
+             (mapcan (lambda (dict)
+                       (list "-u" dict))
+                     dictionary-list)))
+    (goto-char (point-min))
+    (replace-regexp sdcv-filter-string "")
+    ;; TODO: tricky part, test this
+    (if (= (point-min) (point-max))
+        sdcv-fail-notify-string
       (goto-char (point-min))
-      (kill-line 1)                   ;remove unnecessary information.
+      (kill-line 1)
       (buffer-string))))
 
 (defun sdcv-goto-sdcv ()
