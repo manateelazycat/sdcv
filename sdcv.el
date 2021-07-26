@@ -263,8 +263,8 @@
 
 (defcustom sdcv-dictionary-data-dir nil
   "Default, sdcv search word from /usr/share/startdict/dict/.
-You can customize this value with local dir,
-then you don't need copy dict data to /usr/share directory everytime when you finish system install."
+You can customize this value with local dir,then you don't need copy dict data
+to /usr/share directory everytime when you finish system install."
   :type 'string
   :group 'sdcv)
 
@@ -285,7 +285,8 @@ Voice will fetch from youdao.com if you use other system."
 (defcustom sdcv-env-lang "zh_CN.UTF-8"
   "Default LANG environment for sdcv program.
 
-Default is zh_CN.UTF-8, maybe you need change to other coding if your system is not zh_CN.UTF-8."
+Default is zh_CN.UTF-8, maybe you need change to other coding if your system
+is not zh_CN.UTF-8."
   :type 'string
   :group 'sdcv)
 
@@ -311,7 +312,8 @@ Default is zh_CN.UTF-8, maybe you need change to other coding if your system is 
   "Hold last point when show tooltip, use for hide tooltip after move point.")
 
 (defvar sdcv-tooltip-last-scroll-offset 0
-  "Hold last scroll offset when show tooltip, use for hide tooltip after window scroll.")
+  "Hold last scroll offset when show tooltip, use for hide tooltip after window
+scroll.")
 
 (defvar sdcv-mode-font-lock-keywords    ;keyword for buffer display
   '(
@@ -410,25 +412,27 @@ And show information use tooltip."
         (bury-buffer (sdcv-get-buffer)))
     (bury-buffer)))
 
-(defun sdcv-next-dictionary ()
-  "Jump to next dictionary."
-  (interactive)
-  (show-all)
-  (if (search-forward-regexp "^-->.*\n-" nil t) ;don't show error when search failed
-      (progn
-        (call-interactively 'previous-line)
-        (recenter 0))
-    (message "Reached last dictionary.")))
+(with-no-warnings
+  (defun sdcv-next-dictionary ()
+	"Jump to next dictionary."
+	(interactive)
+	(show-all)
+	(if (search-forward-regexp "^-->.*\n-" nil t) ;don't show error when search failed
+		(progn
+		  (call-interactively 'previous-line)
+		  (recenter 0))
+	  (message "Reached last dictionary."))))
 
-(defun sdcv-previous-dictionary ()
-  "Jump to previous dictionary."
-  (interactive)
-  (show-all)
-  (if (search-backward-regexp "^-->.*\n-" nil t) ;don't show error when search failed
-      (progn
-        (forward-char 1)
-        (recenter 0))                   ;adjust position
-    (message "Reached first dictionary.")))
+(with-no-warnings
+  (defun sdcv-previous-dictionary ()
+	"Jump to previous dictionary."
+	(interactive)
+	(show-all)
+	(if (search-backward-regexp "^-->.*\n-" nil t) ;don't show error when search failed
+		(progn
+		  (forward-char 1)
+		  (recenter 0))                   ;adjust position
+	  (message "Reached first dictionary."))))
 
 (defun sdcv-scroll-up-one-line ()
   "Scroll up one line."
@@ -440,15 +444,16 @@ And show information use tooltip."
   (interactive)
   (scroll-down 1))
 
-(defun sdcv-next-line (arg)
-  "Next ARG line and show item."
-  (interactive "P")
-  (ignore-errors
-    (call-interactively 'next-line arg)
-    (save-excursion
-      (beginning-of-line nil)
-      (when (looking-at outline-regexp)
-        (show-entry)))))
+(with-no-warnings
+  (defun sdcv-next-line (arg)
+	"Next ARG line and show item."
+	(interactive "P")
+	(ignore-errors
+	  (call-interactively 'next-line arg)
+	  (save-excursion
+		(beginning-of-line nil)
+		(when (looking-at outline-regexp)
+		  (show-entry))))))
 
 (defun sdcv-prev-line (arg)
   "Previous ARG line."
@@ -644,16 +649,17 @@ Argument SDCV-STRING the search string from sdcv."
         (sdcv-mode)))
     buffer))
 
-(defun sdcv-mode-reinit ()
-  "Re-initialize buffer.
+(with-no-warnings
+  (defun sdcv-mode-reinit ()
+	"Re-initialize buffer.
 Hide all entry but the first one and goto
 the beginning of the buffer."
-  (ignore-errors
-    (setq buffer-read-only t)
-    (goto-char (point-min))
-    (sdcv-next-dictionary)
-    (show-all)
-    (message "Finished searching `%s'." sdcv-current-translate-object)))
+	(ignore-errors
+	  (setq buffer-read-only t)
+	  (goto-char (point-min))
+	  (sdcv-next-dictionary)
+	  (show-all)
+	  (message "Finished searching `%s'." sdcv-current-translate-object))))
 
 (defun sdcv-prompt-input ()
   "Prompt input object for translate."
