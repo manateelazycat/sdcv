@@ -291,7 +291,12 @@ is not zh_CN.UTF-8."
 
 (defcustom sdcv-list-dictionaries-command
   '(program "--list-dicts" dictionary-data-dir)
-  "Command that lists all sdcv dictionaries."
+  "Command that lists all sdcv dictionaries.
+There are the following substitutions in the list:
+
+program -> `sdcv-program'
+
+dictionary-data-dir -> --data-dir `sdcv-dictionary-data-dir'"
   :type '(repeat (choice (const :tag "Sdcv program" program)
                          (const :tag "Dictionary data dir" dictionary-data-dir)
                          string))
@@ -299,7 +304,18 @@ is not zh_CN.UTF-8."
 
 (defcustom sdcv-translate-command
   '(program "--non-interactive" "--only-data-dir" dictionary-data-dir dictionary-list word)
-  "Command used to translate word."
+  "Command used to translate word.
+There are the following substitutions in the list:
+
+program -> `sdcv-program'
+
+dictionary-data-dir -> \"--data-dir\" `sdcv-dictionary-data-dir'
+
+word -> word to translate
+
+dictionary-list -> `sdcv-dictionary-simple-list' or
+`sdcv-dictionary-simple-list' concatenated, and preceded, with
+\"-u\""
   :type '(repeat (choice (const :tag "Sdcv program" program)
                          (const :tag "Word to translate" word)
                          (const :tag "Dictionary data dir" dictionary-data-dir)
@@ -687,6 +703,15 @@ Otherwise return word around point."
     (thing-at-point 'word)))
 
 (defun sdcv-substitute-in-command (command substitutions)
+  "Replace SUBSTITUTIONS in COMMAND.
+
+COMMAND has the following form: (arg), where arg can by a symbol
+or a string.  If it is a symbol, it can be substituted with one
+of SUBSTITUTIONS.
+
+SUBSTITUTIONS has the following form: ((symbol . subs)...), where
+subs is a list of strings.  The subs list is spliced into the
+COMMAND."
   (mapcan
    (lambda (arg)
      (if (symbolp arg)
@@ -695,6 +720,7 @@ Otherwise return word around point."
    command))
 
 (defun sdcv-list-dictionaries ()
+  "Return a list of sdcv dictionaries."
   (let ((process-environment process-environment)
         (command (sdcv-substitute-in-command
                   sdcv-list-dictionaries-command
