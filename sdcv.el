@@ -1,4 +1,4 @@
-;;; sdcv.el --- Interface for sdcv (StartDict console version).
+;;; sdcv.el --- Interface for sdcv (StartDict console version). -*- lexical-binding: t -*-
 
 ;; Filename: sdcv.el
 ;; Description: Interface for sdcv (StartDict console version).
@@ -220,8 +220,6 @@
 
 ;;; Require
 (require 'outline)
-(eval-when-compile
-  (require 'cl))
 (require 'posframe)
 
 ;;; Code:
@@ -593,12 +591,12 @@ Argument DICTIONARY-LIST the word that need transform."
     (setq str (replace-regexp-in-string "-" "_" str))
     (setq str (replace-regexp-in-string "_+" "_" str))
     (setq words (split-string (downcase str) "_"))
-    (dolist (word words)
-      (if (and (>= char-offset search-index)
-               (<= char-offset (+ search-index (length word))))
-          (return word)
-        (setq search-index (+ search-index (length word))))
-      )))
+	(catch 'result
+	  (dolist (word words)
+		(if (and (>= char-offset search-index)
+				 (<= char-offset (+ search-index (length word))))
+			(throw 'result word)
+		  (setq search-index (+ search-index (length word))))))))
 
 (defun sdcv-translate-result (word dictionary-list)
   "Call sdcv to search word in dictionary list, return filtered
