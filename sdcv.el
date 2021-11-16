@@ -647,6 +647,9 @@ Argument SDCV-STRING the search string from sdcv."
         (sdcv-mode)))
     buffer))
 
+(defvar sdcv-mode-reinit-hook 'nil
+  "Hook for sdcv-mode-reinit. This hook is called after sdcv-search-detail.")
+
 (with-no-warnings
   (defun sdcv-mode-reinit ()
 	"Re-initialize buffer.
@@ -657,6 +660,7 @@ the beginning of the buffer."
 	  (goto-char (point-min))
 	  (sdcv-next-dictionary)
 	  (show-all)
+      (run-hooks 'sdcv-mode-reinit-hook)
 	  (message "Finished searching `%s'." sdcv-current-translate-object))))
 
 (defun sdcv-prompt-input ()
