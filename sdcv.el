@@ -309,12 +309,6 @@ is not zh_CN.UTF-8."
 (defvar sdcv-fail-notify-string "没有发现解释也... \n用更多的词典查询一下吧! ^_^"
   "This string is for notify user when search fail.")
 
-(defvar sdcv-tooltip-last-point 0
-  "Hold last point when show tooltip, use for hide tooltip after move point.")
-
-(defvar sdcv-tooltip-last-scroll-offset 0
-  "Hold last scroll offset when show tooltip, use for hide tooltip after window
-scroll.")
 
 (defvar sdcv-mode-font-lock-keywords
   '(;; Dictionary name
@@ -509,8 +503,7 @@ The result will be displayed in buffer named with
 
 (defun sdcv-search-simple (&optional word)
   "Search WORD simple translate result."
-  (let ((result (sdcv-search-with-dictionary word sdcv-dictionary-simple-list))
-        (posframe-mouse-banish nil))
+  (let ((result (sdcv-search-with-dictionary word sdcv-dictionary-simple-list)))
     ;; Show tooltip at point if word fetch from user cursor.
     (posframe-show
      sdcv-tooltip-name
@@ -524,10 +517,7 @@ The result will be displayed in buffer named with
      :header-line-height 0)
     (unwind-protect
         (push (read-event " ") unread-command-events)
-      (posframe-delete sdcv-tooltip-name))
-    ;; (add-hook 'post-command-hook 'sdcv-hide-tooltip-after-move)
-    (setq sdcv-tooltip-last-point (point))
-    (setq sdcv-tooltip-last-scroll-offset (window-start))))
+      (posframe-delete sdcv-tooltip-name))))
 
 (defun sdcv-say-word (word)
   "Listen to WORD pronunciation."
@@ -544,15 +534,6 @@ The result will be displayed in buffer named with
            player
            (format "http://dict.youdao.com/dictvoice?type=2&audio=%s" (url-hexify-string word)))
         (message "mpv, mplayer or mpg123 is needed to play word voice")))))
-
-(defun sdcv-hide-tooltip-after-move ()
-  (ignore-errors
-    (when (get-buffer sdcv-tooltip-name)
-      (unless (and
-               (equal (point) sdcv-tooltip-last-point)
-               (equal (window-start) sdcv-tooltip-last-scroll-offset))
-        (posframe-delete sdcv-tooltip-name)
-        (kill-buffer sdcv-tooltip-name)))))
 
 (defun sdcv-search-with-dictionary (word dictionary-list)
   "Search some WORD with dictionary list.
