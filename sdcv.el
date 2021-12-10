@@ -43,35 +43,34 @@
 ;; Interface for sdcv (StartDict console version).
 ;;
 ;; Translate word by sdcv (console version of Stardict), and display
-;; translation use posframe or buffer.
+;; translation using posframe or in buffer.
 ;;
 ;; Below are commands you can use:
 ;;
 ;; `sdcv-search-pointer'
-;; Search around word and display with buffer.
+;; Search around word and display in buffer.
 ;; `sdcv-search-pointer+'
 ;; Search around word and display with `posframe'.
 ;; `sdcv-search-input'
-;; Search input word and display with buffer.
+;; Search input word and display in buffer.
 ;; `sdcv-search-input+'
 ;; Search input word and display with `posframe'.
 ;;
 ;; Tips:
 ;;
 ;; If current mark is active, sdcv commands will translate
-;; region string, otherwise translate word around point.
+;; contents in region, otherwise translate word at point.
 ;;
 
 ;;; Installation:
 ;;
 ;; To use this extension, you have to install Stardict and sdcv
-;; If you use Debian, it's simply, just:
+;; If you use Debian, it's simple, just:
 ;;
 ;;      sudo aptitude install stardict sdcv -y
 ;;
-;; And make sure have install `posframe.el',
-;; this extension depend it.
-;; You can install get it from:
+;; And make sure you have installed `posframe.el'.
+;; You can get it from:
 ;; https://raw.githubusercontent.com/tumashu/posframe/master/posframe.el
 ;;
 ;; Put sdcv.el to your load-path.
@@ -83,37 +82,31 @@
 ;;
 ;; (require 'sdcv)
 ;;
-;; And then you need set two options.
+;; And then you need to set two options.
 ;;
 ;;  sdcv-dictionary-simple-list         (a simple dictionary list for posframe display)
 ;;  sdcv-dictionary-complete-list       (a complete dictionary list for buffer display)
 ;;
 ;; Example, setup like this:
 ;;
-;; (setq sdcv-dictionary-simple-list        ;; a simple dictionary list
-;;       '(
-;;         "懒虫简明英汉词典"
-;;         "懒虫简明汉英词典"
-;;         "KDic11万英汉词典"
-;;         ))
-;; (setq sdcv-dictionary-complete-list      ;; a complete dictionary list
-;;       '("KDic11万英汉词典"
-;;         "懒虫简明英汉词典"
-;;         "朗道英汉字典5.0"
-;;         "XDICT英汉辞典"
-;;         "朗道汉英字典5.0"
-;;         "XDICT汉英辞典"
-;;         "懒虫简明汉英词典"
-;;         "牛津英汉双解美化版"
-;;         "stardict1.3英汉辞典"
-;;         "英汉汉英专业词典"
-;;         "CDICT5英汉辞典"
-;;         "Jargon"
-;;         "FOLDOC"
-;;         "WordNet"
-;;         ))
-;; (setq sdcv-dictionary-data-dir "your_sdcv_dict_dir")   ;; set local sdcv dict to search word
-;;
+;; (setq sdcv-dictionary-simple-list (list "懒虫简明英汉词典"
+;;                                         "懒虫简明汉英词典"
+;;                                         "KDic11万英汉词典")
+;;       sdcv-dictionary-complete-list (list "KDic11万英汉词典"
+;;                                           "懒虫简明英汉词典"
+;;                                           "朗道英汉字典5.0"
+;;                                           "XDICT英汉辞典"
+;;                                           "朗道汉英字典5.0"
+;;                                           "XDICT汉英辞典"
+;;                                           "懒虫简明汉英词典"
+;;                                           "牛津英汉双解美化版"
+;;                                           "stardict1.3英汉辞典"
+;;                                           "英汉汉英专业词典"
+;;                                           "CDICT5英汉辞典"
+;;                                           "Jargon"
+;;                                           "FOLDOC"
+;;                                           "WordNet")
+;;       sdcv-dictionary-data-dir "your_sdcv_dict_dir") ; set local sdcv dict dir
 
 ;;; Customize:
 ;;
@@ -121,13 +114,13 @@
 ;; The name of sdcv buffer.
 ;;
 ;; `sdcv-dictionary-simple-list'
-;; The dictionary list for simple describe.
+;; The dictionary list for simple description.
 ;;
 ;; `sdcv-dictionary-complete-list'
-;; The dictionary list for complete describe.
+;; The dictionary list for complete description.
 ;;
 ;; `sdcv-dictionary-data-dir'
-;; The directory to store stardict dictionaries.
+;; The directory where stardict dictionaries are stored.
 ;;
 ;; `sdcv-tooltip-face'
 ;; The foreground/background colors of sdcv tooltip.
@@ -214,11 +207,6 @@
 ;;      pluskid@gmail.com   (Zhang ChiYuan)     for sdcv-mode.el
 ;;
 
-;;; TODO
-;;
-;;
-;;
-
 ;;; Require
 
 (require 'subr-x)
@@ -228,12 +216,13 @@
 ;;; Code:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Customize ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defgroup sdcv nil
   "Interface for sdcv (StartDict console version)."
   :group 'edit)
 
 (defcustom sdcv-buffer-name "*SDCV*"
-  "The name of the buffer of sdcv."
+  "The name of the sdcv buffer."
   :type 'string
   :group 'sdcv)
 
@@ -243,51 +232,50 @@
   :group 'sdcv)
 
 (defcustom sdcv-program (if (string-equal system-type "darwin") "/usr/local/bin/sdcv" "sdcv")
-  "The path of sdcv."
+  "Path to sdcv."
   :type 'file
   :group 'sdcv)
 
 (defcustom sdcv-tooltip-timeout 5
-  "The timeout of sdcv tooltip show time, in seconds."
+  "The timeout for sdcv tooltip, in seconds."
   :type 'integer
   :group 'sdcv)
 
 (defcustom sdcv-dictionary-complete-list nil
-  "The complete dictionary list for translate."
+  "The complete dictionary list for translation."
   :type 'list
   :group 'sdcv)
 
 (defcustom sdcv-dictionary-simple-list nil
-  "The simply dictionary list for translate."
+  "The simple dictionary list for translation."
   :type 'list
   :group 'sdcv)
 
 (defcustom sdcv-dictionary-data-dir nil
-  "Default, sdcv search word from /usr/share/startdict/dict/.
-You can customize this value with local dir,then you don't need copy dict data
-to /usr/share directory everytime when you finish system install."
+  "Default, sdcv search word in /usr/share/startdict/dict/.
+If you customize this value with local dir, then you don't need
+to copy dict data to /usr/share directory everytime when you
+finish system installation."
   :type '(choice (const :tag "Default" nil) directory)
   :group 'sdcv)
 
 (defcustom sdcv-tooltip-border-width 10
-  "The border width of sdcv tooltip, default is 10 px."
+  "The border width of sdcv tooltip, in pixels."
   :type 'integer
   :group 'sdcv)
 
 (defcustom sdcv-say-word-p nil
-  "Say word after search word if this option is non-nil.
-Default is nil.
+  "Say word after searching if this option is non-nil.
 
-Voice will use system feature if you use OSX.
-Voice will fetch from youdao.com if you use other system."
+It will use system feature if you use OSX, otherwise youdao.com."
   :type 'boolean
   :group 'sdcv)
 
 (defcustom sdcv-env-lang "zh_CN.UTF-8"
   "Default LANG environment for sdcv program.
 
-Default is zh_CN.UTF-8, maybe you need change to other coding if your system
-is not zh_CN.UTF-8."
+Default is zh_CN.UTF-8, maybe you need to change it to other
+coding if your system is not zh_CN.UTF-8."
   :type 'string
   :group 'sdcv)
 
@@ -297,6 +285,7 @@ is not zh_CN.UTF-8."
   :group 'sdcv)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Variable ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defvar sdcv-previous-window-configuration nil
   "Window configuration before switching to sdcv buffer.")
 
@@ -304,11 +293,10 @@ is not zh_CN.UTF-8."
   "The search object.")
 
 (defvar sdcv-filter-string "^对不起，没有发现和.*\n"
-  "The filter string that sdcv output.")
+  "The filter string that sdcv outputs.")
 
 (defvar sdcv-fail-notify-string "没有发现解释也... \n用更多的词典查询一下吧! ^_^"
-  "This string is for notify user when search fail.")
-
+  "User notification message on failed search.")
 
 (defvar sdcv-mode-font-lock-keywords
   '(;; Dictionary name
@@ -358,23 +346,25 @@ is not zh_CN.UTF-8."
 (define-derived-mode sdcv-mode nil "sdcv"
   "Major mode to look up word through sdcv.
 \\{sdcv-mode-map}
+
 Turning on Text mode runs the normal hook `sdcv-mode-hook'."
   (setq font-lock-defaults '(sdcv-mode-font-lock-keywords))
   (setq buffer-read-only t)
   (set (make-local-variable 'outline-regexp) "^-->.*\n-->"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Interactive Functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun sdcv-search-pointer (&optional word)
   "Get current WORD.
 Display complete translations in other buffer."
   (interactive)
-  ;; Display details translate result.
+  ;; Display details translate result
   (sdcv-search-detail (or word (sdcv-region-or-word))))
 
 (defun sdcv-search-pointer+ ()
-  "Translate current point word.
-And show information use tooltip.
-But this function use a simple dictionary list."
+  "Translate word at point.
+Show information using tooltip.  This command uses
+`sdcv-dictionary-simple-list'."
   (interactive)
   ;; Display simple translate result.
   (sdcv-search-simple))
@@ -394,7 +384,7 @@ And show information using tooltip."
   (sdcv-search-simple (or word (sdcv-prompt-input))))
 
 (defun sdcv-quit ()
-  "Bury sdcv buffer and restore the previous window configuration."
+  "Bury sdcv buffer and restore previous window configuration."
   (interactive)
   (if (window-configuration-p sdcv-previous-window-configuration)
       (progn
@@ -444,14 +434,13 @@ And show information using tooltip."
         (outline-show-entry)))))
 
 (defun sdcv-prev-line (arg)
-  "Previous ARG line."
+  "Go to previous ARGth line."
   (interactive "P")
   (ignore-errors
     (call-interactively 'previous-line arg)))
 
 (defun sdcv-check ()
-  "This function mainly detects the StarDict dictionary that does not exist,
-and eliminates the problem that cannot be translated."
+  "Check for missing StarDict dictionaries."
   (interactive)
   (let* ((dict-name-infos
           (cdr (split-string
@@ -485,6 +474,7 @@ and eliminates the problem that cannot be translated."
       (message "The dictionary's settings look correct, sdcv should work as expected."))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Utilities Functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun sdcv-search-detail (&optional word)
   "Search WORD in `sdcv-dictionary-complete-list'.
 The result will be displayed in buffer named with
@@ -534,8 +524,8 @@ The result will be displayed in buffer named with
         (message "mpv, mplayer or mpg123 is needed to play word voice")))))
 
 (defun sdcv-search-with-dictionary (word dictionary-list)
-  "Search some WORD with dictionary list.
-Argument DICTIONARY-LIST the word that need transform."
+  "Search some WORD with DICTIONARY-LIST.
+Argument DICTIONARY-LIST the word that needs to be transformed."
   (let (translate-result)
     ;; Get translate object.
     (or word (setq word (sdcv-region-or-word)))
@@ -589,7 +579,7 @@ Return filtered string of results."
             sdcv-dictionary-data-dir))))
 
 (defun sdcv-filter (sdcv-string)
-  "This function is for filter sdcv output string,.
+  "Filter sdcv output string.
 Argument SDCV-STRING the search string from sdcv."
   (setq sdcv-string (replace-regexp-in-string sdcv-filter-string "" sdcv-string))
   (if (equal sdcv-string "")
@@ -618,7 +608,8 @@ Argument SDCV-STRING the search string from sdcv."
     buffer))
 
 (defvar sdcv-mode-reinit-hook 'nil
-  "Hook for sdcv-mode-reinit. This hook is called after sdcv-search-detail.")
+  "Hook for `sdcv-mode-reinit'.
+This hook is called after `sdcv-search-detail'.")
 
 (defun sdcv-mode-reinit ()
   "Re-initialize buffer.
