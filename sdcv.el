@@ -1,7 +1,8 @@
-;;; sdcv.el --- Interface for sdcv (StartDict console version). -*- lexical-binding: t -*-
+;;; sdcv.el --- Interface for sdcv (StartDict console version) -*- lexical-binding: t -*-
 
 ;; Filename: sdcv.el
 ;; Description: Interface for sdcv (StartDict console version).
+;; Package-Requires: ((emacs "25.1") (posframe "1.1.2"))
 ;; Author: Andy Stewart <lazycat.manatee@gmail.com>
 ;; Maintainer: Andy Stewart <lazycat.manatee@gmail.com>
 ;; Copyright (C) 2009, Andy Stewart, all rights reserved.
@@ -10,12 +11,12 @@
 ;; Last-Updated: 2020-06-12 19:32:08
 ;;           By: Andy Stewart
 ;; URL: http://www.emacswiki.org/emacs/download/sdcv.el
-;; Keywords: startdict, sdcv
-;; Compatibility: GNU Emacs 22 ~ 23
+;; Keywords: docs, startdict, sdcv
+;; Compatibility: GNU Emacs 25.1
 ;;
 ;; Features that might be required by this library:
 ;;
-;; `posframe' `outline' `cl'
+;; `posframe' `outline'
 ;;
 
 ;;; This file is NOT part of GNU Emacs
@@ -219,6 +220,8 @@
 ;;
 
 ;;; Require
+
+(require 'subr-x)
 (require 'outline)
 (require 'posframe)
 
@@ -313,9 +316,8 @@ is not zh_CN.UTF-8."
   "Hold last scroll offset when show tooltip, use for hide tooltip after window
 scroll.")
 
-(defvar sdcv-mode-font-lock-keywords    ;keyword for buffer display
-  '(
-    ;; Dictionary name
+(defvar sdcv-mode-font-lock-keywords
+  '(;; Dictionary name
     ("^-->\\(.*\\)\n-" . (1 font-lock-type-face))
     ;; Search word
     ("^-->\\(.*\\)[ \t\n]*" . (1 font-lock-function-name-face))
@@ -324,9 +326,8 @@ scroll.")
     ;; Type name
     ("^<<\\([^>]*\\)>>$" . (1 font-lock-comment-face))
     ;; Phonetic symbol
-    ("^\\/\\([^>]*\\)\\/$" . (1 font-lock-string-face))
-    ("^\\[\\([^]]*\\)\\]$" . (1 font-lock-string-face))
-    )
+    ("^/\\([^>]*\\)/$" . (1 font-lock-string-face))
+    ("^\\[\\([^]]*\\)\\]$" . (1 font-lock-string-face)))
   "Expressions to highlight in `sdcv-mode'.")
 
 (defvar sdcv-mode-map                   ;key map
@@ -349,10 +350,10 @@ scroll.")
     (define-key map "s" 'isearch-forward)
     (define-key map "r" 'isearch-backward)
     ;; Hideshow.
-    (define-key map "a" 'show-all)
-    (define-key map "A" 'hide-body)
-    (define-key map "v" 'show-entry)
-    (define-key map "V" 'hide-entry)
+    (define-key map "a" 'outline-show-all)
+    (define-key map "A" 'outline-hide-body)
+    (define-key map "v" 'outilen-show-entry)
+    (define-key map "V" 'outilen-hide-entry)
     ;; Misc.
     (define-key map "e" 'scroll-down)
     (define-key map " " 'scroll-up)
@@ -372,8 +373,8 @@ Turning on Text mode runs the normal hook `sdcv-mode-hook'."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Interactive Functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun sdcv-search-pointer (&optional word)
-  "Get current word.
-And display complete translations in other buffer."
+  "Get current WORD.
+Display complete translations in other buffer."
   (interactive)
   ;; Display details translate result.
   (sdcv-search-detail (or word (sdcv-region-or-word))))
@@ -394,8 +395,8 @@ And show information in other buffer."
   (sdcv-search-detail (or word (sdcv-prompt-input))))
 
 (defun sdcv-search-input+ (&optional word)
-  "Translate current point WORD.
-And show information use tooltip."
+  "Translate current WORD at point.
+And show information using tooltip."
   (interactive)
   ;; Display simple translate result.
   (sdcv-search-simple (or word (sdcv-prompt-input))))
@@ -410,27 +411,25 @@ And show information use tooltip."
         (bury-buffer (sdcv-get-buffer)))
     (bury-buffer)))
 
-(with-no-warnings
-  (defun sdcv-next-dictionary ()
-	"Jump to next dictionary."
-	(interactive)
-	(show-all)
-	(if (search-forward-regexp "^-->.*\n-" nil t) ;don't show error when search failed
-		(progn
-		  (call-interactively 'previous-line)
-		  (recenter 0))
-	  (message "Reached last dictionary."))))
+(defun sdcv-next-dictionary ()
+  "Jump to next dictionary."
+  (interactive)
+  (outline-show-all)
+  (if (search-forward-regexp "^-->.*\n-" nil t) ;don't show error when search failed
+      (progn
+        (call-interactively 'previous-line)
+        (recenter 0))
+    (message "Reached last dictionary.")))
 
-(with-no-warnings
-  (defun sdcv-previous-dictionary ()
-	"Jump to previous dictionary."
-	(interactive)
-	(show-all)
-	(if (search-backward-regexp "^-->.*\n-" nil t) ;don't show error when search failed
-		(progn
-		  (forward-char 1)
-		  (recenter 0))                   ;adjust position
-	  (message "Reached first dictionary."))))
+(defun sdcv-previous-dictionary ()
+  "Jump to previous dictionary."
+  (interactive)
+  (outline-show-all)
+  (if (search-backward-regexp "^-->.*\n-" nil t) ;don't show error when search failed
+      (progn
+        (forward-char 1)
+        (recenter 0))                   ;adjust position
+    (message "Reached first dictionary.")))
 
 (defun sdcv-scroll-up-one-line ()
   "Scroll up one line."
@@ -442,16 +441,15 @@ And show information use tooltip."
   (interactive)
   (scroll-down 1))
 
-(with-no-warnings
-  (defun sdcv-next-line (arg)
-	"Next ARG line and show item."
-	(interactive "P")
-	(ignore-errors
-	  (call-interactively 'next-line arg)
-	  (save-excursion
-		(beginning-of-line nil)
-		(when (looking-at outline-regexp)
-		  (show-entry))))))
+(defun sdcv-next-line (arg)
+  "Go to next ARGth line and show item."
+  (interactive "P")
+  (ignore-errors
+    (call-interactively 'next-line arg)
+    (save-excursion
+      (beginning-of-line nil)
+      (when (looking-at outline-regexp)
+        (outline-show-entry)))))
 
 (defun sdcv-prev-line (arg)
   "Previous ARG line."
@@ -492,14 +490,13 @@ and eliminates the problem that cannot be translated."
       (setq have-invalid-dict t)
       (message "sdcv-dictionary-complete-list is empty, command sdcv-search-detail won't work as expected."))
     (unless have-invalid-dict
-      (message "The dictionary's settings look correct, sdcv should work as expected."))
-    ))
+      (message "The dictionary's settings look correct, sdcv should work as expected."))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Utilities Functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun sdcv-search-detail (&optional word)
-  "Search WORD in `sdcv-dictionary-complete-list'. The result
-will be displayed in buffer named with `sdcv-buffer-name' with
-`sdcv-mode'."
+  "Search WORD in `sdcv-dictionary-complete-list'.
+The result will be displayed in buffer named with
+`sdcv-buffer-name' in `sdcv-mode'."
   (message "Searching...")
   (with-current-buffer (get-buffer-create sdcv-buffer-name)
     (setq buffer-read-only nil)
@@ -524,17 +521,16 @@ will be displayed in buffer named with `sdcv-buffer-name' with
      :foreground-color (face-attribute 'sdcv-tooltip-face :foreground)
      :internal-border-width sdcv-tooltip-border-width
      :tab-line-height 0
-     :header-line-height 0
-     )
+     :header-line-height 0)
     (unwind-protect
         (push (read-event " ") unread-command-events)
       (posframe-delete sdcv-tooltip-name))
     ;; (add-hook 'post-command-hook 'sdcv-hide-tooltip-after-move)
     (setq sdcv-tooltip-last-point (point))
-    (setq sdcv-tooltip-last-scroll-offset (window-start))
-    ))
+    (setq sdcv-tooltip-last-scroll-offset (window-start))))
 
 (defun sdcv-say-word (word)
+  "Listen to WORD pronunciation."
   (if (featurep 'cocoa)
       (call-process-shell-command
        (format "say %s" word) nil 0)
@@ -581,6 +577,7 @@ Argument DICTIONARY-LIST the word that need transform."
       translate-result)))
 
 (defun sdcv-pick-word (str)
+  "Pick word from camelcase STR."
   (let ((case-fold-search nil)
         (search-index 0)
         words
@@ -604,8 +601,8 @@ Argument DICTIONARY-LIST the word that need transform."
 		  (setq search-index (+ search-index (length word))))))))
 
 (defun sdcv-translate-result (word dictionary-list)
-  "Call sdcv to search word in dictionary list, return filtered
-string of results."
+  "Call sdcv to search WORD in DICTIONARY-LIST.
+Return filtered string of results."
   (sdcv-filter
    (shell-command-to-string
     ;; Set LANG environment variable, make sure `shell-command-to-string' can handle CJK character correctly.
@@ -650,18 +647,17 @@ Argument SDCV-STRING the search string from sdcv."
 (defvar sdcv-mode-reinit-hook 'nil
   "Hook for sdcv-mode-reinit. This hook is called after sdcv-search-detail.")
 
-(with-no-warnings
-  (defun sdcv-mode-reinit ()
-	"Re-initialize buffer.
+(defun sdcv-mode-reinit ()
+  "Re-initialize buffer.
 Hide all entry but the first one and goto
 the beginning of the buffer."
-	(ignore-errors
-	  (setq buffer-read-only t)
-	  (goto-char (point-min))
-	  (sdcv-next-dictionary)
-	  (show-all)
-      (run-hooks 'sdcv-mode-reinit-hook)
-	  (message "Finished searching `%s'." sdcv-current-translate-object))))
+  (ignore-errors
+    (setq buffer-read-only t)
+    (goto-char (point-min))
+    (sdcv-next-dictionary)
+    (outline-show-all)
+    (run-hooks 'sdcv-mode-reinit-hook)
+    (message "Finished searching `%s'." sdcv-current-translate-object)))
 
 (defun sdcv-prompt-input ()
   "Prompt input object for translate."
