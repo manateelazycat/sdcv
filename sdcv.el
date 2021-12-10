@@ -244,7 +244,7 @@
 
 (defcustom sdcv-program (if (string-equal system-type "darwin") "/usr/local/bin/sdcv" "sdcv")
   "The path of sdcv."
-  :type 'string
+  :type 'file
   :group 'sdcv)
 
 (defcustom sdcv-tooltip-timeout 5
@@ -266,7 +266,7 @@
   "Default, sdcv search word from /usr/share/startdict/dict/.
 You can customize this value with local dir,then you don't need copy dict data
 to /usr/share directory everytime when you finish system install."
-  :type 'string
+  :type '(choice (const :tag "Default" nil) directory)
   :group 'sdcv)
 
 (defcustom sdcv-tooltip-border-width 10
@@ -280,7 +280,7 @@ Default is nil.
 
 Voice will use system feature if you use OSX.
 Voice will fetch from youdao.com if you use other system."
-  :type 'integer
+  :type 'boolean
   :group 'sdcv)
 
 (defcustom sdcv-env-lang "zh_CN.UTF-8"
