@@ -563,23 +563,17 @@ Argument DICTIONARY-LIST the word that need transform."
         (search-index 0)
         words
         char-offset)
-    (setq char-offset
-          (- (point)
-             (save-excursion
-               (backward-word)
-               (point)
-               )))
+    (setq char-offset (- (point) (save-excursion (backward-word) (point))))
     (setq str (replace-regexp-in-string "\\([a-z0-9]\\)\\([A-Z]\\)" "\\1_\\2" str))
     (setq str (replace-regexp-in-string "\\([A-Z]+\\)\\([A-Z][a-z]\\)" "\\1_\\2" str))
     (setq str (replace-regexp-in-string "-" "_" str))
     (setq str (replace-regexp-in-string "_+" "_" str))
     (setq words (split-string (downcase str) "_"))
-	(catch 'result
-	  (dolist (word words)
-		(if (and (>= char-offset search-index)
-				 (<= char-offset (+ search-index (length word))))
-			(throw 'result word)
-		  (setq search-index (+ search-index (length word))))))))
+    (catch 'result
+      (dolist (word words)
+        (if (<= search-index char-offset (+ search-index (length word)))
+            (throw 'result word)
+          (setq search-index (+ search-index (length word))))))))
 
 (defun sdcv-translate-result (word dictionary-list)
   "Call sdcv to search WORD in DICTIONARY-LIST.
@@ -641,18 +635,17 @@ the beginning of the buffer."
     (message "Finished searching `%s'." sdcv-current-translate-object)))
 
 (defun sdcv-prompt-input ()
-  "Prompt input object for translate."
-  (read-string (format "Word (%s): " (or (sdcv-region-or-word) ""))
-               nil nil
-               (sdcv-region-or-word)))
+  "Prompt input for translation."
+  (let* ((word (sdcv-region-or-word))
+         (default (if word (format " (default %s)" word) "")))
+    (read-string (format "Word%s: " default) nil nil word)))
 
 (defun sdcv-region-or-word ()
   "Return region or word around point.
 If `mark-active' on, return region string.
 Otherwise return word around point."
-  (if mark-active
-      (buffer-substring-no-properties (region-beginning)
-                                      (region-end))
+  (if (use-region-p)
+      (buffer-substring-no-properties (region-beginning) (region-end))
     (thing-at-point 'word)))
 
 (provide 'sdcv)
