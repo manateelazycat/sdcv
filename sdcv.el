@@ -354,6 +354,7 @@ Turning on Text mode runs the normal hook `sdcv-mode-hook'."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Interactive Functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;###autoload
 (defun sdcv-search-pointer (&optional word)
   "Get current WORD.
 Display complete translations in other buffer."
@@ -361,6 +362,7 @@ Display complete translations in other buffer."
   ;; Display details translate result
   (sdcv-search-detail (or word (sdcv-region-or-word))))
 
+;;;###autoload
 (defun sdcv-search-pointer+ ()
   "Translate word at point.
 Show information using tooltip.  This command uses
@@ -369,6 +371,7 @@ Show information using tooltip.  This command uses
   ;; Display simple translate result.
   (sdcv-search-simple))
 
+;;;###autoload
 (defun sdcv-search-input (&optional word)
   "Translate current input WORD.
 And show information in other buffer."
@@ -376,6 +379,7 @@ And show information in other buffer."
   ;; Display details translate result.
   (sdcv-search-detail (or word (sdcv-prompt-input))))
 
+;;;###autoload
 (defun sdcv-search-input+ (&optional word)
   "Translate current WORD at point.
 And show information using tooltip."
