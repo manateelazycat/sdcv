@@ -209,6 +209,7 @@
 
 ;;; Require
 
+(require 'json)
 (require 'subr-x)
 (require 'outline)
 (require 'posframe)
@@ -446,38 +447,42 @@ And show information using tooltip."
 (defun sdcv-check ()
   "Check for missing StarDict dictionaries."
   (interactive)
-  (let* ((dict-name-infos
-          (cdr (split-string
-                (string-trim
-                 (shell-command-to-string
-                  (format "env LANG=%s %s --list-dicts --data-dir=%s" sdcv-env-lang sdcv-program sdcv-dictionary-data-dir)))
-                "\n")))
-         (dict-names (mapcar (lambda (dict) (car (split-string dict "    "))) dict-name-infos))
-         (have-invalid-dict nil))
-    (if sdcv-dictionary-simple-list
-        (dolist (dict sdcv-dictionary-simple-list)
-          (unless (member dict dict-names)
-            (setq have-invalid-dict t)
-            (message
-             "sdcv-dictionary-simple-list: dictionary '%s' does not exist, remove it from sdcv-dictionary-simple-list or download the corresponding dictionary file to %s"
-             dict
-             sdcv-dictionary-data-dir)))
-      (setq have-invalid-dict t)
-      (message "sdcv-dictionary-simple-list is empty, command sdcv-search-simple won't work as expected."))
-    (if sdcv-dictionary-complete-list
-        (dolist (dict sdcv-dictionary-complete-list)
-          (unless (member dict dict-names)
-            (setq have-invalid-dict t)
-            (message
-             "sdcv-dictionary-complete-list: dictionary '%s' does not exist, remove it from sdcv-dictionary-complete-list or download the corresponding dictionary file to %s"
-             dict
-             sdcv-dictionary-data-dir)))
-      (setq have-invalid-dict t)
-      (message "sdcv-dictionary-complete-list is empty, command sdcv-search-detail won't work as expected."))
-    (unless have-invalid-dict
-      (message "The dictionary's settings look correct, sdcv should work as expected."))))
+  (let* ((dicts (sdcv-list-dicts))
+         (missing-simple-dicts (sdcv-missing-dicts sdcv-dictionary-simple-list dicts))
+         (missing-complete-dicts (sdcv-missing-dicts sdcv-dictionary-complete-list dicts)))
+    (if (and sdcv-dictionary-simple-list (null missing-simple-dicts)
+             sdcv-dictionary-complete-list (null missing-complete-dicts))
+        (message "The dictionary's settings look correct, sdcv should work as expected.")
+      (unless sdcv-dictionary-simple-list
+        (message "sdcv-dictionary-simple-list is empty, command sdcv-search-simple won't work as expected."))
+      (dolist (dict missing-simple-dicts)
+        (message "sdcv-dictionary-simple-list: dictionary '%s' does not exist, remove it or download the corresponding dictionary file to %s"
+                 dict sdcv-dictionary-data-dir))
+      (unless sdcv-dictionary-complete-list
+        (message "sdcv-dictionary-complete-list is empty, command sdcv-search-detail won't work as expected."))
+      (dolist (dict missing-complete-dicts)
+        (message "sdcv-dictionary-complete-list: dictionary '%s' does not exist, remove it or download the corresponding dictionary file to %s"
+                 dict sdcv-dictionary-data-dir)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Utilities Functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun sdcv-list-dicts ()
+  "List dictionaries present in SDCV."
+  (with-temp-buffer
+    (save-excursion
+      (let* ((lang-env (concat "LANG=" sdcv-env-lang))
+             (process-environment (cons lang-env process-environment))
+             (arguments (list "--data-dir" sdcv-dictionary-data-dir
+                              "--json-output" "--list-dicts")))
+        (apply #'call-process sdcv-program nil t nil arguments)))
+    (mapcar (lambda (dict) (cdr (assq 'name dict))) (json-read))))
+
+(defun sdcv-missing-dicts (list &optional dicts)
+  "List missing LIST dictionaries in DICTS.
+If DICTS is nil, compute present dictionaries with
+`sdcv--list-dicts'."
+  (let ((dicts (or dicts (sdcv-list-dicts))))
+    (cl-set-difference list dicts :test #'string=)))
 
 (defun sdcv-search-detail (&optional word)
   "Search WORD in `sdcv-dictionary-complete-list'.
