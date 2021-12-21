@@ -213,6 +213,7 @@
 (require 'subr-x)
 (require 'outline)
 (require 'posframe)
+(require 'subword)
 
 ;;; Code:
 
@@ -500,8 +501,7 @@ The result will be displayed in buffer named with
     (setq buffer-read-only nil)
     (erase-buffer)
     (setq sdcv-current-translate-object word)
-    (insert (sdcv-search-with-dictionary word
-                                         sdcv-dictionary-complete-list))
+    (insert (sdcv-search-with-dictionary word sdcv-dictionary-complete-list))
     (sdcv-goto-sdcv)
     (sdcv-mode-reinit)))
 
@@ -542,42 +542,24 @@ The result will be displayed in buffer named with
 (defun sdcv-search-with-dictionary (word dictionary-list)
   "Search some WORD with DICTIONARY-LIST.
 Argument DICTIONARY-LIST the word that needs to be transformed."
-  (let (translate-result)
-    ;; Get translate object.
-    (or word (setq word (sdcv-region-or-word)))
+  (let* ((word (or word (sdcv-region-or-word)))
+         (translate-result (sdcv-translate-result word dictionary-list)))
 
-    ;; Record current translate object.
-    (setq sdcv-current-translate-object word)
-    ;; Get translate result.
-    (setq translate-result (sdcv-translate-result word dictionary-list))
+    (when (and (string= sdcv-fail-notify-string translate-result)
+               (setq word (sdcv-pick-word)))
+      (setq translate-result (sdcv-translate-result word dictionary-list)))
 
-    (if (string-equal translate-result "")
-        ;; Try pick word from camelcase string and translate again if no translate result for current string.
-        (progn
-          (setq word (sdcv-pick-word word))
-          (if sdcv-say-word-p (sdcv-say-word word))
-          (sdcv-translate-result word dictionary-list))
-      ;; Otherwise return translate result of current word.
-      (if sdcv-say-word-p (sdcv-say-word word))
-      translate-result)))
+    (when sdcv-say-word-p
+      (sdcv-say-word word))
 
-(defun sdcv-pick-word (str)
-  "Pick word from camelcase STR."
-  (let ((case-fold-search nil)
-        (search-index 0)
-        words
-        char-offset)
-    (setq char-offset (- (point) (save-excursion (backward-word) (point))))
-    (setq str (replace-regexp-in-string "\\([a-z0-9]\\)\\([A-Z]\\)" "\\1_\\2" str))
-    (setq str (replace-regexp-in-string "\\([A-Z]+\\)\\([A-Z][a-z]\\)" "\\1_\\2" str))
-    (setq str (replace-regexp-in-string "-" "_" str))
-    (setq str (replace-regexp-in-string "_+" "_" str))
-    (setq words (split-string (downcase str) "_"))
-    (catch 'result
-      (dolist (word words)
-        (if (<= search-index char-offset (+ search-index (length word)))
-            (throw 'result word)
-          (setq search-index (+ search-index (length word))))))))
+    translate-result))
+
+(defun sdcv-pick-word (&optional _str)
+  "Pick word from camelcase string at point.
+_STR is ignored and leaved for backwards compatibility."
+  (let ((subword (make-symbol "subword")))
+    (put subword 'forward-op 'subword-forward)
+    (thing-at-point subword t)))
 
 (defun sdcv-translate-result (word dictionary-list)
   "Call sdcv to search WORD in DICTIONARY-LIST.
@@ -638,7 +620,8 @@ If `mark-active' on, return region string.
 Otherwise return word around point."
   (if (use-region-p)
       (buffer-substring-no-properties (region-beginning) (region-end))
-    (thing-at-point 'word)))
+    (thing-at-point 'word t)))
+
 
 (provide 'sdcv)
 
