@@ -352,7 +352,7 @@ coding if your system is not zh_CN.UTF-8."
 \\{sdcv-mode-map}
 
 Turning on Text mode runs the normal hook `sdcv-mode-hook'."
-  (setq font-lock-defaults '(sdcv-mode-font-lock-keywords))
+  (setq font-lock-defaults '(sdcv-mode-font-lock-keywords t))
   (setq buffer-read-only t)
   (set (make-local-variable 'outline-regexp) "^-->.*\n-->"))
 
