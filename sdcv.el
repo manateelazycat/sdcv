@@ -212,7 +212,6 @@
 (require 'json)
 (require 'subr-x)
 (require 'outline)
-(require 'posframe)
 (require 'subword)
 
 ;;; Code:
@@ -507,21 +506,22 @@ The result will be displayed in buffer named with
 
 (defun sdcv-search-simple (&optional word)
   "Search WORD simple translate result."
-  (let ((result (sdcv-search-with-dictionary word sdcv-dictionary-simple-list)))
-    ;; Show tooltip at point if word fetch from user cursor.
-    (posframe-show
-     sdcv-tooltip-name
-     :string result
-     :position (if (derived-mode-p 'eaf-mode) (mouse-absolute-pixel-position) (point))
-     :timeout sdcv-tooltip-timeout
-     :background-color (face-attribute 'sdcv-tooltip-face :background)
-     :foreground-color (face-attribute 'sdcv-tooltip-face :foreground)
-     :internal-border-width sdcv-tooltip-border-width
-     :tab-line-height 0
-     :header-line-height 0)
-    (unwind-protect
-        (push (read-event " ") unread-command-events)
-      (posframe-delete sdcv-tooltip-name))))
+  (when (ignore-errors (require 'posframe))
+    (let ((result (sdcv-search-with-dictionary word sdcv-dictionary-simple-list)))
+      ;; Show tooltip at point if word fetch from user cursor.
+      (posframe-show
+       sdcv-tooltip-name
+       :string result
+       :position (if (derived-mode-p 'eaf-mode) (mouse-absolute-pixel-position) (point))
+       :timeout sdcv-tooltip-timeout
+       :background-color (face-attribute 'sdcv-tooltip-face :background)
+       :foreground-color (face-attribute 'sdcv-tooltip-face :foreground)
+       :internal-border-width sdcv-tooltip-border-width
+       :tab-line-height 0
+       :header-line-height 0)
+      (unwind-protect
+          (push (read-event " ") unread-command-events)
+        (posframe-delete sdcv-tooltip-name)))))
 
 (defun sdcv-say-word (word)
   "Listen to WORD pronunciation."
